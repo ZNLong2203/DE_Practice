@@ -3,6 +3,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import cloudscraper
 import requests
+import boto3
 import csv
 
 # URL to crawl
@@ -22,13 +23,13 @@ headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
 }
 
-# File to save data
+# Save to CSV in local
 file = open("phimmoi.csv", "w", newline="", encoding="utf-8")
 writer = csv.writer(file)
 writer.writerow(["Title", "Status", "Director", "Country", "Year of Production", "Duration", "Total Episodes", "Quality", "Language", "Genre", "Views", "Description"])
 
 # Parse HTML
-for page_num in range(1, 2):
+for page_num in range(1, 3):
     response = requests.get(url + str(page_num), headers=headers)
     if(response.status_code == 200):
         print("Fetched page " + str(page_num))
@@ -66,5 +67,10 @@ for page_num in range(1, 2):
     else:
         print("Failed to fetch page " + str(page_num))
         break
+
+# Upload file to S3
+s3 = boto3.client('s3')
+bucket_name = 'ai4e-ap-southeast-1-dev-s3-data-landing'
+s3.upload_file('phimmoi.csv', bucket_name, 'golden_zone/nnlong/phimmoi.csv')
 
 
